@@ -14,7 +14,7 @@ namespace MagicRestAPI
             HttpClientStreamService srv = new(uri);
             var card_file = await srv.Execute();
 
-         //   await File.WriteAllTextAsync("Data/master_card_file.json", JsonSerializer.Serialize(card_file));
+            //await File.WriteAllTextAsync("Data/master_card_file.json", JsonSerializer.Serialize(card_file));
 
             var langs = card_file.GroupBy(c => c.Language).Select(cf => new { Key = cf.Key, card = cf });
             

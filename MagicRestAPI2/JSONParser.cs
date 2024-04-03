@@ -36,14 +36,14 @@ namespace MagicParser
             {
                 Directory.CreateDirectory("Data");
             }
-            await FileDownloader.DownloadFileAsync(uri, ToType);
+            _content = await FileDownloader.DownloadFileAsync(uri, ToType);
         }
 
         #region loading and saving json files
 
-        public void loadNewFile(string filePath)
+        public async Task LoadFile(string filePath)
         {            
-            loadJsonAsync(filePath).Wait();
+            await loadJsonAsync(filePath);
         }
 
         public IEnumerable<string?> ListJsonFiles()

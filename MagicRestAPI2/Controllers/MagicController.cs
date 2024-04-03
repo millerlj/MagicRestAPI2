@@ -26,12 +26,11 @@ namespace MagicRestAPI.Controllers
         }
 
         [HttpGet("load_file/{file_name}")]
-        public bool LoadFile(string file_name)
+        public async Task LoadFile(string file_name)
         {
             string path = Path.GetFullPath(file_name);
-            parser.loadNewFile(file_name);
+            await parser.LoadFile(file_name);
             Console.WriteLine("create new parser");
-            return true;
         }
 
         [HttpGet("filter/{inclusion_val}/{type}")]
@@ -61,7 +60,7 @@ namespace MagicRestAPI.Controllers
         {
             try
             {
-                parser.DownloadFiles().Wait();
+                await parser.DownloadFiles();
             }
             catch (Exception ex)
             {
