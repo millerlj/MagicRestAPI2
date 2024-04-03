@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace MagicParser;
@@ -27,48 +28,30 @@ public class Card
     public Legalities? Legalities { get; set; }
     [JsonPropertyName("mana_cost")]
     public string? ManaCost { get; set; }
-    []
+    [JsonPropertyName("multiverse_ids")]
     public List<string>? MultiverseIds { get; set; }
+    [JsonPropertyName("name")]
     public string? Name { get; set; }
+    [JsonPropertyName("object")]
     public string? Object { get; set; }
+    [JsonPropertyName("oracle_id")]
     public string? OracleId { get; set; }
+    [JsonPropertyName("oracle_text")]
     public string? OracleText { get; set; }
+    [JsonPropertyName("power")]
     public string? Power { get; set; }
+    [JsonPropertyName("reprint")]
     public bool? Reprint { get; set; }
+    [JsonPropertyName("set")]
     public string? Set { get; set; }
+    [JsonPropertyName("set_id")]
     public string? SetId { get; set; }
+    [JsonPropertyName("textless")]
     public bool? Textless { get; set; }
+    [JsonPropertyName("toughness")]
     public string? Toughness { get; set; }
+    [JsonPropertyName("type_line")]
     public string? TypeLine { get; set; }
-    
-    public Card()
-    {
-    }
-
-    public Card(JObject obj)
-    {
-        Cmc = (double)obj["cmc"];
-        ColorIdentity = obj["colorIdentity"].ToObject<List<string>>();
-        Colors = obj["colors"].ToObject<List<string>>();
-        Id = (string)obj["id"];
-        Keywords = obj["keywords"].ToObject<List<string>>();
-        Lang = (string)obj["lang"];
-        Layout = (string)obj["layout"];
-        Legalities = obj["legalities"].ToObject<Legalities>();
-        ManaCost = (string)obj["manaCost"];
-        MultiverseIds = obj["multiverse_ids"].ToObject<List<string>>();
-        Name = (string)obj["name"];
-        Object = (string)obj["object"];
-        OracleId = (string)obj["oracle_id"];
-        OracleText = (string)obj["oracle_text"];
-        Power = (string)obj["power"];
-        Reprint = (bool)obj["reprint"];
-        Set = (string)obj["set"];
-        SetId = (string)obj["set_id"];
-        Textless = (bool)obj["textless"];
-        Toughness = (string)obj["toughness"];
-        TypeLine = (string)obj["type_line"];
-    }
 }
 
 public class FullCard
@@ -261,27 +244,49 @@ public class ImageUris
 
 public class Legalities
 {
+    [JsonPropertyName("standard")]
     public string Standard { get; set; }
+    [JsonPropertyName("future")]
     public string Future { get; set; }
+    [JsonPropertyName("historic")]
     public string Historic { get; set; }
+    [JsonPropertyName("timeless")]
     public string Timeless { get; set; }
+    [JsonPropertyName("gladiator")]
     public string Gladiator { get; set; }
+    [JsonPropertyName("pioneer")]
     public string Pioneer { get; set; }
+    [JsonPropertyName("explorer")]
     public string Explorer { get; set; }
+    [JsonPropertyName("modern")]
     public string Modern { get; set; }
+    [JsonPropertyName("legacy")]
     public string Legacy { get; set; }
+    [JsonPropertyName("pauper")]
     public string Pauper { get; set; }
+    [JsonPropertyName("vintage")]
     public string Vintage { get; set; }
+    [JsonPropertyName("penny")]
     public string Penny { get; set; }
+    [JsonPropertyName("commander")]
     public string Commander { get; set; }
+    [JsonPropertyName("oathbreaker")]
     public string Oathbreaker { get; set; }
+    [JsonPropertyName("standardbrawl")]
     public string Standardbrawl { get; set; }
+    [JsonPropertyName("brawl")]
     public string Brawl { get; set; }
+    [JsonPropertyName("alchemy")]
     public string Alchemy { get; set; }
+    [JsonPropertyName("paupercommander")]
     public string Paupercommander { get; set; }
+    [JsonPropertyName("duel")]
     public string Duel { get; set; }
+    [JsonPropertyName("oldschool")]
     public string Oldschool { get; set; }
+    [JsonPropertyName("premodern")]
     public string Premodern { get; set; }
+    [JsonPropertyName("predh")]
     public string Predh { get; set; }
 
     public Legalities()

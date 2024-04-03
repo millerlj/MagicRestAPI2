@@ -399,3 +399,5 @@ FodyWeavers.xsd
 
 # Ignore JSON files in the Data/ Folder. 
 Data/*.json
+
+.vs/*

@@ -1,5 +1,6 @@
+using MagicParser;
 using MagicRestAPI;
-using static MagicRestAPI.File_Downloader;
+using static MagicRestAPI.FileDownloader;
 
 internal class Program
 {
@@ -8,6 +9,7 @@ internal class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
+        builder.Services.AddSingleton<JsonParser>();
 
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -31,7 +33,7 @@ internal class Program
 
         if (!File.Exists("master_card_file.json"))
         {
-            await File_Downloader.DownloadFileAsync("https://data.scryfall.io");
+            await FileDownloader.DownloadFileAsync("https://data.scryfall.io");
         }
 
         app.Run();

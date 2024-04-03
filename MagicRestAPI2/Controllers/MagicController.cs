@@ -11,14 +11,14 @@ namespace MagicRestAPI.Controllers
     [ApiController]
     public class MagicController : ControllerBase
     {
-        JSONParser parser;
+        JsonParser parser;
 
         [HttpGet("list_json_files")]
         public IEnumerable<string?> ListJsonFiles()
         {
             if (parser == null)
             {
-                parser = new JSONParser();
+                parser = new JsonParser();
             }
             
             return parser.ListJsonFiles();
@@ -31,7 +31,7 @@ namespace MagicRestAPI.Controllers
 
             if (parser == null)
             {
-                parser = new JSONParser(file_name);
+                parser = new JsonParser(file_name);
                 Console.WriteLine("create new parser");
                 return true;
             }
@@ -95,16 +95,6 @@ namespace MagicRestAPI.Controllers
                 return false;
             }
             return parser.SaveCurrentJson(filename);
-        }
-
-        [HttpGet("printFirstCard")]
-        public string PrintFirstCard()
-        {
-            if (parser == null)
-            {
-                return null;
-            }
-            return parser.PrintFirstCard();
         }
 
     }

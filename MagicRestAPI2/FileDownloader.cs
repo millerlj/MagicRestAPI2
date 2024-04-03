@@ -4,7 +4,7 @@ using MagicParser;
 
 namespace MagicRestAPI
 {
-    public class File_Downloader
+    public class FileDownloader
     {
         public static async Task DownloadFileAsync(string uri)
         {
@@ -12,7 +12,14 @@ namespace MagicRestAPI
 
             HttpClientStreamService srv = new(uri);
             var card_file = await srv.Execute();
-            await File.WriteAllTextAsync("master_card_file.json", JsonSerializer.Serialize(card_file, new JsonSerializerOptions() { WriteIndented = true }));
+
+            List<Card> cards = JsonSerializer.Deserialize<List<Card>>(File.ReadAllText("master_card_file.json"));
+
+            await File.WriteAllTextAsync("Data/master_card_file.json", JsonSerializer.Serialize(card_file, new JsonSerializerOptions() { WriteIndented = true }));
+
+            cards.GroupBy(c => c.Lang == "en").Select(g => g.ToList()).ToList().ForEach(g => JsonSerializer.Serialize(g, new JsonSerializerOptions() { WriteIndented = true }));
+
+            await File.WriteAllTextAsync("Data/master_card_file_en.json", JsonSerializer.Serialize(cards, new JsonSerializerOptions() { WriteIndented = true }));
         }
 
         private class HttpClientStreamService

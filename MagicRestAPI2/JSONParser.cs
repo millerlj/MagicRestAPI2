@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MagicParser
 {
-    internal class JSONParser
+    internal class JsonParser
     {
         private JArray _jsonContent;
         private string _currentFilePath;
@@ -18,12 +18,12 @@ namespace MagicParser
             get { return _jsonContent; }
         }
 
-        public JSONParser()
+        public JsonParser()
         {
             _jsonContent = new JArray();
         }
 
-        public JSONParser(string filePath)
+        public JsonParser(string filePath)
         {
             _jsonContent = new JArray();
             _currentFilePath = filePath;
@@ -167,30 +167,6 @@ namespace MagicParser
         }
 
         #endregion card db manipulation methods
-
-        public async Task<string> SerializeJson()
-        {
-            return JsonConvert.SerializeObject(_jsonContent);
-        }
-
-        public string PrintFirstCard()
-        {
-            Console.WriteLine(_jsonContent["data"][0]);
-            
-            return _jsonContent["data"][0].ToString();
-        }
-
-        public async Task<Card> deserializeJson(JObject obj)
-        {
-            return new Card(obj);
-        }
-        /*
-        public async Task<Card> serializeCard(Card card)
-        {
-            return JsonConvert.SerializeObject(card);
-        }
-        */
-        
-
+       
     }
 }
