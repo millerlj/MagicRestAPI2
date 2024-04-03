@@ -4,7 +4,7 @@ using static MagicRestAPI.FileDownloader;
 
 internal class Program
 {
-    private static async Task Main(string[] args)
+    private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
@@ -29,12 +29,7 @@ internal class Program
 
         app.UseAuthorization();
 
-        app.MapControllers();
-
-        if (!File.Exists("master_card_file.json"))
-        {
-            await FileDownloader.DownloadFileAsync("https://data.scryfall.io");
-        }
+        app.MapControllers();        
 
         app.Run();
     }

@@ -1,40 +1,48 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using MagicRestAPI;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace MagicParser
 {
-    internal class JsonParser
+    public class JsonParser
     {
-        private JArray _jsonContent;
-        private string _currentFilePath;
+        private List<Card> _content = new() ;
 
-        public JArray JsonContent
+        public ReadOnlyCollection<Card> Content
         {
-            get { return _jsonContent; }
+            get { return _content.AsReadOnly(); }
         }
 
         public JsonParser()
-        {
-            _jsonContent = new JArray();
+        {            
         }
 
-        public JsonParser(string filePath)
+        public async Task DownloadFiles()
         {
-            _jsonContent = new JArray();
-            _currentFilePath = filePath;
-            loadJsonAsync(filePath).Wait();
+            string uri = "https://data.scryfall.io/";
+            if (Directory.Exists("Data"))
+            {
+                Directory.Delete("Data", true);
+                Directory.CreateDirectory("Data");
+            }
+            else
+            {
+                Directory.CreateDirectory("Data");
+            }
+            await FileDownloader.DownloadFileAsync(uri, ToType);
         }
-        
+
         #region loading and saving json files
-        
+
         public void loadNewFile(string filePath)
-        {
-            _currentFilePath = filePath;
+        {            
             loadJsonAsync(filePath).Wait();
         }
 
@@ -51,122 +59,39 @@ namespace MagicParser
 
         private async Task loadJsonAsync(string filePath)
         {
-            using (StreamReader file = File.OpenText(filePath))
-            using (JsonTextReader reader = new JsonTextReader(file))
-            {
-                _jsonContent = (JArray) await JToken.ReadFromAsync(reader);
-            }
-
-            // Need to Serialize the JSON object to get the correct format
-            //_jsonContent = JArray.Parse(JsonConvert.SerializeObject(_jsonContent));
-            foreach (var card in _jsonContent["data"])
-            {
-                Console.WriteLine(card["name"]);
-            }
-            Console.WriteLine(JsonPopulated());
-            Console.WriteLine(_jsonContent.First().GetType());
-            Console.WriteLine(_jsonContent.First().ToString());
+            using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            _content = await JsonSerializer.DeserializeAsync<List<Card>>(fileStream);
         }
-
-        public bool SaveCurrentJson(string filePath)
-        {
-            try
-            {
-                File.WriteAllText(filePath, _jsonContent.ToString());
-                return true;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                return false;
-            }
-        }
-
         #endregion loading and saving json files
 
-        #region card query methods
-        public IEnumerable<string> GetAllCardsWithType(string type)
-        {
-            List<string> types = new List<string>();
-            types = type.Split(' ').ToList();
-            types.RemoveAll(s => s.Contains("-"));
-            
-            if (_jsonContent.Count == 0)
-            {
-                return new List<string>();
-            }
+        #region card query methods      
 
-            List<string> cards = new List<string>();
-            foreach (var card in _jsonContent["data"])
-            {
-                foreach (var cardType in card["type_line"].ToString().Split(' '))
-                {
-                    if (types.Contains(cardType))
-                    {
-                        cards.Add(card["name"].ToString());
-                        break;
-                    }
-                }
-            }
-            return cards;
-        }
-
-        public HashSet<string> GetAllCardTypes()
-        {
-            HashSet<string> set = new HashSet<string>();
-            
-            foreach (var card in _jsonContent["data"])
-            {
-                foreach (string cardType in card["type_line"].ToString().Split(' '))
-                {
-                    set.Add(cardType);
-                }
-            }
-
-            return set;
-        }
-
-        public int JsonPopulated()
-        {
-            return _jsonContent.Count;
-        }
+     
         #endregion card query methods
 
         #region card db manipulation methods
 
-        public async Task<bool> FilterJson(string field_type, string[] include, string[] exclude)
+        public bool FilterJson(string field_type, string[] include, string[] exclude)
         {
-            if (_jsonContent.Count == 0)
-            {
-                return false;
-            }
-
-            JArray data = (JArray) _jsonContent["data"];
-            JArray newData = new JArray();
-
-            foreach (var card in data)
-            {
-                if (include.Length > 0)
-                {
-                    if (include.Contains(card[field_type].ToString()))
-                    {
-                        newData.Add(card);
-                    }
-                }
-                else if (exclude.Length > 0)
-                {
-                    if (!exclude.Contains(card[field_type].ToString()))
-                    {
-                        newData.Add(card);
-                    }
-                }
-            }
-
-            _jsonContent["data"] = newData;
+            
             return true;
         }
 
         #endregion card db manipulation methods
-       
+
+
+        static string ToType(string typeline)
+        {
+            if (typeline?.Contains("Creature") == true)
+            {
+                return "Creature";
+            }
+            if (typeline?.Contains("Artifact") == true)
+            {
+                return "Artifact";
+            }
+
+            return "General";
+        }
     }
 }

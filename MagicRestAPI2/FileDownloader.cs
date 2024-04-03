@@ -5,21 +5,30 @@ using MagicParser;
 namespace MagicRestAPI
 {
     public class FileDownloader
-    {
-        public static async Task DownloadFileAsync(string uri)
+    {        
+
+        public static async Task<List<Card>> DownloadFileAsync(string uri, Func<string,string> grouper)
         {
             var timeoutSignal = new CancellationTokenSource(TimeSpan.FromMinutes(20));
 
             HttpClientStreamService srv = new(uri);
             var card_file = await srv.Execute();
 
-            List<Card> cards = JsonSerializer.Deserialize<List<Card>>(File.ReadAllText("master_card_file.json"));
+         //   await File.WriteAllTextAsync("Data/master_card_file.json", JsonSerializer.Serialize(card_file));
 
-            await File.WriteAllTextAsync("Data/master_card_file.json", JsonSerializer.Serialize(card_file, new JsonSerializerOptions() { WriteIndented = true }));
-
-            cards.GroupBy(c => c.Lang == "en").Select(g => g.ToList()).ToList().ForEach(g => JsonSerializer.Serialize(g, new JsonSerializerOptions() { WriteIndented = true }));
-
-            await File.WriteAllTextAsync("Data/master_card_file_en.json", JsonSerializer.Serialize(cards, new JsonSerializerOptions() { WriteIndented = true }));
+            var langs = card_file.GroupBy(c => c.Language).Select(cf => new { Key = cf.Key, card = cf });
+            
+            foreach(var lan in langs)
+            {
+                await File.WriteAllTextAsync($"Data/{lan.Key}_card_file.json", JsonSerializer.Serialize(lan.card));
+                var values = lan.card.GroupBy(c => grouper(c.TypeLine));
+                foreach (var typeGroups in values)
+                {
+                    await File.AppendAllTextAsync($"Data/{lan.Key}_{typeGroups.Key}_card_file.json",
+                        JsonSerializer.Serialize(typeGroups, new JsonSerializerOptions() { WriteIndented = true }));
+                }
+            }
+            return card_file;
         }
 
         private class HttpClientStreamService

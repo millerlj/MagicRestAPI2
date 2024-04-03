@@ -13,14 +13,15 @@ namespace MagicRestAPI.Controllers
     {
         JsonParser parser;
 
+
+        public MagicController(JsonParser parser)
+        {
+            this.parser = parser;
+        }
+
         [HttpGet("list_json_files")]
         public IEnumerable<string?> ListJsonFiles()
-        {
-            if (parser == null)
-            {
-                parser = new JsonParser();
-            }
-            
+        {                        
             return parser.ListJsonFiles();
         }
 
@@ -28,41 +29,9 @@ namespace MagicRestAPI.Controllers
         public bool LoadFile(string file_name)
         {
             string path = Path.GetFullPath(file_name);
-
-            if (parser == null)
-            {
-                parser = new JsonParser(file_name);
-                Console.WriteLine("create new parser");
-                return true;
-            }
-            else if (parser.DoesFileExist(path))
-            {
-                parser.loadNewFile(file_name);
-                Console.WriteLine("load new file");
-                return true;
-            }
-            return false;
-        }
-
-        [HttpGet("card_type/{type}")]
-        public IEnumerable<string> GetCardType(string type)
-        {
-            if (parser == null)
-            {
-                return null;
-            }
-
-            List<string> types = new List<string>();
-            types = type.Split(' ').ToList();
-
-            List<string> cards = new List<string>();
-
-            foreach (string t in types)
-            {
-                cards.AddRange(parser.GetAllCardsWithType(t).Except(cards));
-            }
-
-            return cards;
+            parser.loadNewFile(file_name);
+            Console.WriteLine("create new parser");
+            return true;
         }
 
         [HttpGet("filter/{inclusion_val}/{type}")]
@@ -87,15 +56,17 @@ namespace MagicRestAPI.Controllers
             return cards;
         }
 
-        [HttpGet("save_current_json/{filename}")]
-        public bool SaveCurrentJson(string filename)
+        [HttpPost("downloadfile")]
+        public async Task DownloadFiles()
         {
-            if (parser == null)
+            try
             {
-                return false;
+                parser.DownloadFiles().Wait();
             }
-            return parser.SaveCurrentJson(filename);
+            catch (Exception ex)
+            {
+                
+            }
         }
-
     }
 }
