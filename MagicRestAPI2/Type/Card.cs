@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -216,7 +217,7 @@ public class Card
     public string Power { get; set; }
 
     [JsonPropertyName("preview")]
-    public Dictionary<string, string> Prewiew { get; set; }
+    public Dictionary<string, string> Preview { get; set; }
 
     [JsonPropertyName("prices")]
     public Price Prices { get; set; }
@@ -467,6 +468,51 @@ public class Price
     public decimal? UsdFoil { get; set; }
 }
 
+public class MinimizedCard
+{
+    [JsonPropertyName("cmc")]
+    public decimal Cmc { get; set; }
+    [JsonPropertyName("colors")]
+    public string[] Colors { get; set; }
+    [JsonPropertyName("color_identity")]
+    public string[] ColorIdentity { get; set; }
+    [JsonPropertyName("id")]
+    public Guid Id { get; set; }
+    [JsonPropertyName("keywords")]
+    public string[] Keywords { get; set; }
+    [JsonPropertyName("lang")]
+    public string Language { get; set; }
+    [JsonPropertyName("layout")]
+    public string Layout { get; set; }
+    [JsonPropertyName("legalities")]
+    public Dictionary<string, string> Legalities { get; set; }
+    [JsonPropertyName("multiverse_ids")]
+    public int[] MultiverseIds { get; set; }
+    [JsonPropertyName("oracle_id")]
+    public string OracleId { get; set; }
+    [JsonPropertyName("oracle_text")]
+    public string OracleText { get; set; }
+    [JsonPropertyName("name")]
+    public string Name { get; set; }
+    [JsonPropertyName("mana_cost")]
+    public string ManaCost { get; set; }
+    [JsonPropertyName("type_line")]
+    public string TypeLine { get; set; }
+    [JsonPropertyName("power")]
+    public int Power { get; set; }
+    [JsonPropertyName("toughness")]
+    public int Toughness { get; set; }
+    [JsonPropertyName("set")]
+    public string Set { get; set; }
+    [JsonPropertyName("set_id")]
+    public string SetId { get; set; }
+    [JsonPropertyName("reprint")]
+    public bool Reprint { get; set; }
+    [JsonPropertyName("textless")]
+    public bool Textless { get; set; }
+    [JsonPropertyName("loyalty")]
+    public string Loyalty { get; set; }
+}
 
 internal class UsDecimalAsStringConverter : JsonConverter<decimal?>
 {

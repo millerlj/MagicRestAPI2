@@ -7,25 +7,39 @@ namespace MagicRestAPI
     public class FileDownloader
     {        
 
-        public static async Task<List<Card>> DownloadFileAsync(string uri, Func<string,string> grouper)
+        public static async Task<List<Card>> DownloadFileAsync(string uri, Func<string, List<string>> CardTypeGroupBy, bool SaveOnlyEnglishCards)
         {
             var timeoutSignal = new CancellationTokenSource(TimeSpan.FromMinutes(20));
 
             HttpClientStreamService srv = new(uri);
             var card_file = await srv.Execute();
-
+            Console.WriteLine($"File Downloader: Downloaded {card_file.Count} cards");
+            
+            // Uncomment this next line will cause some sort of buffer overflow
             //await File.WriteAllTextAsync("Data/master_card_file.json", JsonSerializer.Serialize(card_file));
 
-            var langs = card_file.GroupBy(c => c.Language).Select(cf => new { Key = cf.Key, card = cf });
+            var LanguageGroups = card_file.GroupBy(c => c.Language).Select(cf => new { Key = cf.Key, card = cf });
+            Console.WriteLine("File Downloader: " + LanguageGroups.Count() + " languages found");
             
-            foreach(var lan in langs)
+            if (SaveOnlyEnglishCards)
             {
-                await File.WriteAllTextAsync($"Data/{lan.Key}_card_file.json", JsonSerializer.Serialize(lan.card));
-                var values = lan.card.GroupBy(c => grouper(c.TypeLine));
+                LanguageGroups = LanguageGroups.Where(lang => lang.Key == "en");
+                Console.WriteLine("File Downloader: Discarding non-english cards");
+            }
+            
+            foreach(var LangGroup in LanguageGroups)
+            {
+                await File.WriteAllTextAsync($"Data/{LangGroup.Key}_card_file.json", JsonSerializer.Serialize(LangGroup.card));
+                Console.WriteLine($"File Downloader: Wrote {LangGroup.Key}_card_file.json");
+                
+                var values = LangGroup.card.GroupBy(c => CardTypeGroupBy(c.TypeLine).ToString());
+                Console.WriteLine($"File Downloader: {values.Count()} type groups found");
+                
                 foreach (var typeGroups in values)
                 {
-                    await File.AppendAllTextAsync($"Data/{lan.Key}_{typeGroups.Key}_card_file.json",
-                        JsonSerializer.Serialize(typeGroups, new JsonSerializerOptions() { WriteIndented = true }));
+                    await File.AppendAllTextAsync($"Data/{LangGroup.Key}_{typeGroups.Key}_card_file.json",
+                    JsonSerializer.Serialize(typeGroups, new JsonSerializerOptions() { WriteIndented = false }));
+                    Console.WriteLine($"File Downloader: Wrote {LangGroup.Key}_{typeGroups.Key}_card_file.json");
                 }
             }
             return card_file;
@@ -50,7 +64,7 @@ namespace MagicRestAPI
                 return GetCardsWithStream();
             }
 
-            private async Task<List<Card>?> GetCardsWithStream()
+            private async Task<List<Card>> GetCardsWithStream()
             {
                 using (var response = await _httpClient.GetAsync("all-cards/all-cards-20240325212428.json", HttpCompletionOption.ResponseHeadersRead))
                 {

@@ -13,7 +13,7 @@ namespace MagicParser
 {
     public class JsonParser
     {
-        private List<Card> _content = new() ;
+        private List<Card> _content = new();
 
         public ReadOnlyCollection<Card> Content
         {
@@ -24,6 +24,7 @@ namespace MagicParser
         {            
         }
 
+        #region loading and saving json files
         public async Task DownloadFiles()
         {
             string uri = "https://data.scryfall.io/";
@@ -36,19 +37,29 @@ namespace MagicParser
             {
                 Directory.CreateDirectory("Data");
             }
-            _content = await FileDownloader.DownloadFileAsync(uri, ToType);
+            _content = await FileDownloader.DownloadFileAsync(uri, ToCardType, true);
         }
 
-        #region loading and saving json files
+        public async Task LoadFileAsync(string filename)
+        {
+            string filePath = $"Data/{filename}.json";
+            using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            _content = await JsonSerializer.DeserializeAsync<List<Card>>(fileStream);
+            Console.WriteLine($"Loaded {_content.Count} cards from {filePath}");
+        }
 
-        public async Task LoadFile(string filePath)
-        {            
-            await loadJsonAsync(filePath);
+        public async Task SaveFileAsync(string filename)
+        {
+            string filePath = $"Data/{filename}.json";
+            using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+            await File.WriteAllTextAsync($"Data/{filename}.json", JsonSerializer.Serialize(_content));
+            Console.WriteLine($"Wrote {filename}.json");
+            //await JsonSerializer.SerializeAsync(fileStream, _content);
         }
 
         public IEnumerable<string?> ListJsonFiles()
         {
-            string[] jsonFiles = Directory.GetFiles(".", "*.json");
+            string[] jsonFiles = Directory.GetFiles("Data/.", "*.json");
             return jsonFiles.Select(Path.GetFileName);
         }
 
@@ -56,42 +67,129 @@ namespace MagicParser
         {
             return File.Exists(filePath);
         }
-
-        private async Task loadJsonAsync(string filePath)
-        {
-            using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-            _content = await JsonSerializer.DeserializeAsync<List<Card>>(fileStream);
-        }
         #endregion loading and saving json files
 
-        #region card query methods      
-
-     
-        #endregion card query methods
-
         #region card db manipulation methods
-
-        public bool FilterJson(string field_type, string[] include, string[] exclude)
+        public bool FilterContentByTypeLine(string[] include, string[] exclude)
         {
-            
+            List<Card> cards = new List<Card>();
+            try
+            {
+                var Groups = _content.GroupBy(c => string.Join(",", ToCardType(c.TypeLine))).Select(cf => new { Key = cf.Key, card = cf });
+                var filteredGroups = Groups.Where(g =>
+                {
+                    var cardTypes = g.Key.Split(",");
+                    if (exclude != null && cardTypes.Intersect(exclude).Any())
+                    {
+                        return false;
+                    }
+                    if (include != null && !cardTypes.Intersect(include).Any())
+                    {
+                        return true;
+                    }
+                    return false;
+                });
+                cards.AddRange(filteredGroups.SelectMany(g => g.card));
+                _content = cards;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+            return true;
+        }
+
+        public bool RemoveReprints()
+        {
+            List<Card> cards = new List<Card>();
+            try
+            {
+                var Groups = _content.GroupBy(c => c.Reprint).Select(cf => new { Key = cf.Key, card = cf });
+                var Group = Groups.Where(g => g.Key == false);
+                cards.AddRange(Group.SelectMany(g => g.card));
+                _content = cards;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+            return true;
+        }
+
+        public void PruneNullContent()
+        {
+            _content = _content.Where(c => !IsContentNull(c)).ToList();
+        }
+
+        private bool IsContentNull(Card content)
+        {
+            return (content.Name == null &&
+                content.TypeLine == null &&
+                content.OracleText == null &&
+                content.ManaCost == null) ? true : false;
+        }
+
+        static List<string> ToCardType(string typeline)
+        {
+            if (typeline == null)
+            {
+                return new List<string>();
+            }
+            List<string> types = typeline.Split(" ").ToList();
+            List<string> returnable = new List<string>();
+            foreach (var type in types)
+            {
+                string NormalizedType = type.Normalize();
+                if (NormalizedType == "Legendary".Normalize())
+                {
+                    returnable.Add("Legendary");
+                }
+                if (NormalizedType == "Creature".Normalize())
+                {
+                    returnable.Add("Creature");
+                }
+                if (NormalizedType == "Artifact".Normalize())
+                {
+                    returnable.Add("Artifact");
+                }
+                if (NormalizedType == "Enchantment".Normalize())
+                {
+                    returnable.Add("Enchantment");
+                }
+                if (NormalizedType == "Instant".Normalize())
+                {
+                    returnable.Add("Instant");
+                }
+                if (NormalizedType == "Sorcery".Normalize())
+                {
+                    returnable.Add("Sorcery");
+                }
+                if (NormalizedType == "Land".Normalize())
+                {
+                    returnable.Add("Land");
+                }
+                if (NormalizedType == "Planeswalker".Normalize())
+                {
+                    returnable.Add("Planeswalker");
+                }
+            }   
+            return returnable;
+        }
+
+        public bool CompareCardTypes(string[] firstCardTypes, string[] secondCardTypes)
+        {
+            foreach (var type in firstCardTypes)
+            {
+                if (!secondCardTypes.Contains(type))
+                {
+                    return false;
+                }
+            }
             return true;
         }
 
         #endregion card db manipulation methods
-
-
-        static string ToType(string typeline)
-        {
-            if (typeline?.Contains("Creature") == true)
-            {
-                return "Creature";
-            }
-            if (typeline?.Contains("Artifact") == true)
-            {
-                return "Artifact";
-            }
-
-            return "General";
-        }
     }
 }
