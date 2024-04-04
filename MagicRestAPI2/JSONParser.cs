@@ -25,7 +25,7 @@ namespace MagicParser
         }
 
         #region loading and saving json files
-        public async Task DownloadFiles()
+        public async Task DownloadFiles(bool EnglishOnly)
         {
             string uri = "https://data.scryfall.io/";
             if (Directory.Exists("Data"))
@@ -52,9 +52,10 @@ namespace MagicParser
         {
             string filePath = $"Data/{filename}.json";
             using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
-            await File.WriteAllTextAsync($"Data/{filename}.json", JsonSerializer.Serialize(_content));
+            //await File.WriteAllTextAsync($"Data/{filename}.json", JsonSerializer.Serialize(_content.ToList()));
+            
+            await JsonSerializer.SerializeAsync(fileStream, _content);
             Console.WriteLine($"Wrote {filename}.json");
-            //await JsonSerializer.SerializeAsync(fileStream, _content);
         }
 
         public IEnumerable<string?> ListJsonFiles()

@@ -101,12 +101,12 @@ namespace MagicRestAPI.Controllers
             _parser.PruneNullContent();
         }
 
-        [HttpPost("downloadfile")]
-        public async Task DownloadFiles()
+        [HttpPost("downloadfile/{EnglishOnly}")]
+        public async Task DownloadFiles(bool EnglishOnly)
         {
             try
             {
-                await _parser.DownloadFiles();
+                await _parser.DownloadFiles(EnglishOnly);
             }
             catch (Exception ex)
             {
