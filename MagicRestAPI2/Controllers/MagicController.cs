@@ -49,7 +49,7 @@ namespace MagicRestAPI.Controllers
 
         [HttpGet("list_json_files")]
         public IEnumerable<string?> ListJsonFiles()
-        {                        
+        {
             return _parser.ListJsonFiles();
         }
 
@@ -87,6 +87,96 @@ namespace MagicRestAPI.Controllers
             }
             return Ok();
         }
+
+        [HttpPost("all_card_names")]
+        public IEnumerable<string> GetAllCardNames()
+        {
+            return _parser.GetAllCardNames();
+        }
+
+        [HttpPost("all_unique_major_card_types")]
+        public IEnumerable<string> GetAllUniqueCardTypes()
+        {
+            List<string> card_types = _parser.GetAllUniqueCardTypes();
+            
+            HashSet<string> unique = new HashSet<string>();
+
+            foreach (string type in card_types)
+            {
+
+                string[] BreakUp = type.Split(" ");
+                for (int i = 0; i < BreakUp.Length; i++)
+                {
+                    if (BreakUp[i] != "—")
+                    {
+                        unique.Add(BreakUp[i]);
+                    }   
+                    else
+                    {
+                        break;
+                    }
+                }
+                
+            }
+            return unique;
+        }
+
+        [HttpPost("all_unique_minor_card_types/{oftype}")]
+        public IEnumerable<string> GetAllUniqueCardTypes(string oftype)
+        {
+            List<string> card_types = _parser.GetAllUniqueCardTypes();
+
+            HashSet<string> unique = new HashSet<string>();
+
+            foreach (string type in card_types)
+            {
+                if (type.Contains(oftype))
+                {
+                    string[] BreakUp = type.Split(" ");
+                    bool start = false;
+
+                    for (int i = 0; i < BreakUp.Length; i++)
+                    {
+                        if (BreakUp[i] == "—")
+                        {
+                            start = true;
+                        }
+
+                        if (start)
+                        {
+                            unique.Add(BreakUp[i]);
+                        }
+                    }
+                }
+
+            }
+            return unique;
+        }
+    }
+
+
+        [HttpPost("power_and_toughness/{RangeOrRandomPair}")]
+        public IActionResult GetPowerAndToughness(string RangeOrRandomPair)
+        {
+            if (RangeOrRandomPair.ToLower() == "range")
+            {
+                List<JsonParser.HelperCard> cards = _parser.GetPowerAndToughness();
+                List<JsonParser.HelperCard> unique = cards.Select(x => x).Distinct().ToList();
+                List<int> Power = unique.Select(x => x.Power).Distinct().ToList();
+                List<int> Toughness = unique.Select(x => x.Toughness).Distinct().ToList();
+                return Ok((Power, Toughness));
+            } 
+            else if (RangeOrRandomPair.ToLower() == "random")
+            {
+                return Ok(_parser.GetLikelyhoodOfPowerAndToughness());
+            }
+            else
+            {
+                return BadRequest("Invalid parameter, must be 'range' or 'random'");
+            }
+        }
+
+
 
         [HttpPost("remove_reprints")]
         public IActionResult RemoveReprints()
