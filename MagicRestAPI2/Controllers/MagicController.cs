@@ -152,8 +152,6 @@ namespace MagicRestAPI.Controllers
             }
             return unique;
         }
-    }
-
 
         [HttpPost("power_and_toughness/{RangeOrRandomPair}")]
         public IActionResult GetPowerAndToughness(string RangeOrRandomPair)
@@ -165,7 +163,7 @@ namespace MagicRestAPI.Controllers
                 List<int> Power = unique.Select(x => x.Power).Distinct().ToList();
                 List<int> Toughness = unique.Select(x => x.Toughness).Distinct().ToList();
                 return Ok((Power, Toughness));
-            } 
+            }
             else if (RangeOrRandomPair.ToLower() == "random")
             {
                 return Ok(_parser.GetLikelyhoodOfPowerAndToughness());
@@ -218,3 +216,7 @@ namespace MagicRestAPI.Controllers
         }
     }
 }
+    
+
+
+        
