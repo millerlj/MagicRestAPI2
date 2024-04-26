@@ -468,7 +468,7 @@ public class Price
     public decimal? UsdFoil { get; set; }
 }
 
-public class MinimizedCard
+public class MinimizedCard : Card
 {
     [JsonPropertyName("cmc")]
     public decimal Cmc { get; set; }

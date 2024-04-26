@@ -13,7 +13,8 @@ namespace MagicParser
 {
     public class JsonParser
     {
-        private List<Card> _content = new();
+        private List<Card> _content;
+        private List<MinimizedCard> minimizedContent;
         private object lockObject = new object();
         private SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
 
@@ -23,7 +24,7 @@ namespace MagicParser
         }
 
         public JsonParser()
-        {            
+        {  
         }
 
         #region loading and saving json files
@@ -210,6 +211,10 @@ namespace MagicParser
 
         public List<string> GetAllCardNames()
         {
+            if (minimizedContent == null)
+            {
+                //minimizedContent = CardConverter.Read(card);
+            }
             return _content.Where(c => c.Name != null).Select(c => c.Name).ToList();
         }
 
@@ -221,6 +226,18 @@ namespace MagicParser
         public List<string> GetAllCreatureTypes()
         {
             return _content.Where(c => c.TypeLine.Contains("Creature")).Select(c => c.TypeLine).Distinct().ToList();
+        }
+
+        public List<string> GetAllOracleText(bool separate_cause_effect)
+        {
+            var oracle_text_collection = _content.Where(c => c.OracleText != null).Select(c => c.OracleText);
+            
+            return oracle_text_collection.ToList();
+        }
+
+        public List<string> GetAllOracleTextByCardType(string[] types)
+        {
+            return _content.Where(c => CompareCardTypes(ToCardType(c.TypeLine).ToArray(), types)).Select(c => c.OracleText).ToList();
         }
 
         public List<HelperCard> GetPowerAndToughness()

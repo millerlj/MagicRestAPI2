@@ -15,7 +15,6 @@ namespace MagicRestAPI.Controllers
     {
         JsonParser _parser;
 
-
         public MagicController(JsonParser parser)
         {
             this._parser = parser;
@@ -119,6 +118,26 @@ namespace MagicRestAPI.Controllers
                 
             }
             return unique;
+        }
+
+        [HttpPost("all_oracle_text/{separate_cause_effect}")]
+        public IActionResult GetAllOracleText(bool separate_cause_effect)
+        {
+            if (!separate_cause_effect)
+            {
+                return Ok(_parser.GetAllOracleText(true));
+            }
+
+            
+            
+            return Ok(_parser.GetAllOracleText());
+        }
+
+        [HttpPost("all_oracle_text_by_card_type/{types}")]
+        public IEnumerable<string> GetAllOracleTextByCardType(string types)
+        {
+            string[] strings = types.Split(",");
+            return _parser.GetAllOracleTextByCardType(strings);
         }
 
         [HttpPost("all_unique_minor_card_types/{oftype}")]
