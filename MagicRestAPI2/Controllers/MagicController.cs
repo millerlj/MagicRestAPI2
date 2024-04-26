@@ -120,17 +120,29 @@ namespace MagicRestAPI.Controllers
             return unique;
         }
 
-        [HttpPost("all_oracle_text/{separate_cause_effect}")]
-        public IActionResult GetAllOracleText(bool separate_cause_effect)
+        [HttpPost("all_oracle_text/{separate_clause}/{separate_cause_effect}")]
+        public IActionResult GetAllOracleText(bool separate_clause, bool separate_cause_effect)
         {
-            if (!separate_cause_effect)
+            if (!separate_cause_effect && !separate_clause)
             {
-                return Ok(_parser.GetAllOracleText(true));
+                return Ok(_parser.GetAllOracleText(false, false));
+            } 
+            else if (separate_clause && !separate_cause_effect)
+            {
+                return Ok(_parser.GetAllOracleText(true, false));
             }
-
-            
-            
-            return Ok(_parser.GetAllOracleText());
+            else if (separate_clause && separate_cause_effect)
+            {
+                return Ok(_parser.GetAllOracleText(true, true));
+            }
+            else if (!separate_clause && separate_cause_effect)
+            {
+                return BadRequest("Have to separate based on clauses before separate cause and effect");
+            }
+            else
+            {
+                return BadRequest("Dafuq, these are invalid parameters");
+            }
         }
 
         [HttpPost("all_oracle_text_by_card_type/{types}")]

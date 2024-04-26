@@ -228,10 +228,49 @@ namespace MagicParser
             return _content.Where(c => c.TypeLine.Contains("Creature")).Select(c => c.TypeLine).Distinct().ToList();
         }
 
-        public List<string> GetAllOracleText(bool separate_cause_effect)
+        public List<string> GetAllOracleText(bool separate_clause, bool separate_cause_effect)
         {
             var oracle_text_collection = _content.Where(c => c.OracleText != null).Select(c => c.OracleText);
-            
+            List<string> separated = new List<string>();
+            List<string> causes = new List<string>();
+            List<string> effects = new List<string>();
+
+            if (separate_clause)
+            {
+                foreach (var oracle_text in oracle_text_collection)
+                {
+                    string[] split = oracle_text.Split("\n");
+                    foreach (var s in split)
+                    {
+                        separated.Add(s);
+                    }
+                }
+                if (separate_clause && !separate_cause_effect)
+                {
+                    return separated;
+                }
+            }
+            if (separate_cause_effect)
+            {
+                foreach (var oracle_text in oracle_text_collection)
+                {
+                    string[] split = oracle_text.Split(", ");
+                    if (split.Length > 1)
+                    {
+                        foreach (var s in split)
+                        {
+                            separated.Add(s);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Disregarded this oracle text for not matching any current patterns:");
+                        Console.WriteLine(oracle_text);
+                        Console.WriteLine("--------------------------------------------------------------------");
+                    }
+                }
+                return separated;
+            }
             return oracle_text_collection.ToList();
         }
 
