@@ -128,7 +128,7 @@ namespace MagicRestAPI.Controllers
                 return Ok(_parser.GetAllOracleText(false, false));
             } 
             else if (separate_clause && !separate_cause_effect)
-            {
+            {                
                 return Ok(_parser.GetAllOracleText(true, false));
             }
             else if (separate_clause && separate_cause_effect)
@@ -148,6 +148,10 @@ namespace MagicRestAPI.Controllers
         [HttpGet("all_flavor_text")]
         public IEnumerable<string> GetAllFlavorText()
         {
+            if(!_parser.HasContent)
+            {
+                throw new ArgumentNullException("No content");
+            }
             return _parser.GetAllFlavorText();
         }
 

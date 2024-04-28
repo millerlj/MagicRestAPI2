@@ -228,12 +228,18 @@ namespace MagicParser
             return _content.Where(c => c.TypeLine.Contains("Creature")).Select(c => c.TypeLine).Distinct().ToList();
         }
 
-        public List<string> GetAllOracleText(bool separate_clause, bool separate_cause_effect)
+        public bool HasContent => _content != null; 
+        public ProcessedOracleText GetAllOracleText(bool separate_clause, bool separate_cause_effect)
         {
-            var oracle_text_collection = _content.Where(c => c.OracleText != null).Select(c => ReplaceCardNameInOracleText(c));
+            var oracle_card_collection = _content.Where(c => c.OracleText != null).Select(c => ReplaceCardNameInOracleText(c));
+            oracle_card_collection = oracle_card_collection.Select(c => RemoveAllTextBetweenParanthesis(c));
+            var oracle_text_collection = oracle_card_collection.Select(c => c.OracleText);
+            
             List<string> separated = new List<string>();
             List<string> causes = new List<string>();
             List<string> effects = new List<string>();
+
+       
 
             if (separate_clause)
             {
@@ -247,19 +253,29 @@ namespace MagicParser
                 }
                 if (separate_clause && !separate_cause_effect)
                 {
-                    return separated;
+                    return new ProcessedOracleText(separated, causes, effects);
                 }
             }
             if (separate_cause_effect)
             {
                 foreach (var oracle_text in oracle_text_collection)
                 {
-                    string[] split = oracle_text.Split(", ");
-                    if (split.Length > 1)
+                    if (oracle_text.Contains(":"))
                     {
-                        foreach (var s in split)
+                        string[] statement = oracle_text.Split(":");
+                        causes.Add(statement[0]);
+                        if (statement.Length > 1)
                         {
-                            separated.Add(s);
+                            effects.Add(statement[1]);
+                        }
+                    }
+                    if (oracle_text.Contains(","))
+                    {
+                        string[] statement = oracle_text.Split(",");
+                        causes.Add(statement[0]);
+                        if (statement.Length > 1)
+                        {
+                            effects.Add(statement[1]);
                         }
                     }
                     else
@@ -269,14 +285,40 @@ namespace MagicParser
                         Console.WriteLine("--------------------------------------------------------------------");
                     }
                 }
-                return separated;
+                return new ProcessedOracleText(separated, causes, effects); ;
             }
-            return oracle_text_collection.ToList();
+            return new ProcessedOracleText(separated, causes, effects);
         }
 
-        private string ReplaceCardNameInOracleText(Card card)
+        public class ProcessedOracleText
         {
-            return card.OracleText.Replace(card.Name, "{CARDNAME}");
+            public ProcessedOracleText(List<string> separated, List<string> causes, List<string> effects)
+            {
+                this.separated = separated;
+                this.causes = causes;
+                this.effects = effects;
+            }
+
+            public List<string> separated { get; set; }
+            public List<string> causes { get; set; }
+            public List<string> effects { get; set; }
+        }
+
+        private Card ReplaceCardNameInOracleText(Card card)
+        {
+            card.OracleText = card.OracleText.Replace(card.Name, "{CARDNAME}");
+            return card;
+        }
+
+        private Card RemoveAllTextBetweenParanthesis(Card card)
+        {
+            card.OracleText = card.OracleText.Replace("(.*)", "");
+            return card;
+        }
+
+        private string SplitOracleTextOnComma(string oracle_text, List<string> list)
+        {
+            return oracle_text.Replace(",", "\n");
         }
 
         public List<string> GetAllOracleTextByCardType(string[] types)
@@ -291,7 +333,11 @@ namespace MagicParser
 
         public List<string> GetAllFlavorText()
         {
-            return _content.Where(c => c.FlavorText != null).Select(c => c.FlavorText).ToList();
+            if (_content == null)
+            {
+                return null;
+            }
+            return _content.Where(c => c.FlavorText != null).Select(c => c.FlavorText.Replace("\\","")).ToList();
         }
 
         public List<string> GetLikelyhoodOfPowerAndToughness()
