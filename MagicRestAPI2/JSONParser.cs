@@ -230,7 +230,7 @@ namespace MagicParser
 
         public List<string> GetAllOracleText(bool separate_clause, bool separate_cause_effect)
         {
-            var oracle_text_collection = _content.Where(c => c.OracleText != null).Select(c => c.OracleText);
+            var oracle_text_collection = _content.Where(c => c.OracleText != null).Select(c => ReplaceCardNameInOracleText(c));
             List<string> separated = new List<string>();
             List<string> causes = new List<string>();
             List<string> effects = new List<string>();
@@ -274,6 +274,11 @@ namespace MagicParser
             return oracle_text_collection.ToList();
         }
 
+        private string ReplaceCardNameInOracleText(Card card)
+        {
+            return card.OracleText.Replace(card.Name, "{CARDNAME}");
+        }
+
         public List<string> GetAllOracleTextByCardType(string[] types)
         {
             return _content.Where(c => CompareCardTypes(ToCardType(c.TypeLine).ToArray(), types)).Select(c => c.OracleText).ToList();
@@ -282,6 +287,11 @@ namespace MagicParser
         public List<HelperCard> GetPowerAndToughness()
         {
             return _content.Where(c => c.TypeLine.Contains("Creature")).Select(c => new HelperCard { Name = c.Name, Type = c.TypeLine, Power = ConvertStringToInt(c.Power), Toughness = ConvertStringToInt(c.Toughness) }).ToList();
+        }
+
+        public List<string> GetAllFlavorText()
+        {
+            return _content.Where(c => c.FlavorText != null).Select(c => c.FlavorText).ToList();
         }
 
         public List<string> GetLikelyhoodOfPowerAndToughness()

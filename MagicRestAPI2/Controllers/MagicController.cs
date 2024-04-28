@@ -120,7 +120,7 @@ namespace MagicRestAPI.Controllers
             return unique;
         }
 
-        [HttpPost("all_oracle_text/{separate_clause}/{separate_cause_effect}")]
+        [HttpGet("all_oracle_text/{separate_clause}/{separate_cause_effect}")]
         public IActionResult GetAllOracleText(bool separate_clause, bool separate_cause_effect)
         {
             if (!separate_cause_effect && !separate_clause)
@@ -143,6 +143,12 @@ namespace MagicRestAPI.Controllers
             {
                 return BadRequest("Dafuq, these are invalid parameters");
             }
+        }
+
+        [HttpGet("all_flavor_text")]
+        public IEnumerable<string> GetAllFlavorText()
+        {
+            return _parser.GetAllFlavorText();
         }
 
         [HttpPost("all_oracle_text_by_card_type/{types}")]
