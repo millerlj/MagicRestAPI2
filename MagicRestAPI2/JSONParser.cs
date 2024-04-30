@@ -232,14 +232,14 @@ namespace MagicParser
     public bool HasContent => _content != null;
     public ProcessedOracleText GetAllOracleText(bool separate_clause, bool separate_cause_effect)
     {
-      var oracle_text_collection = _content.Take(100).Where(c => c.OracleText != null).SelectMany(c => CleanUpAndReturnOrcaleText(c)).ToList();
+      var oracle_text_collection = _content.Where(c => c.OracleText != null).SelectMany(c => CleanUpAndReturnOrcaleText(c)).ToList();
 
       var causeEffect = oracle_text_collection.Where(s => s.Contains(',') || s.Contains(':')).Select(ce => {
         var l = ce.Split(new char[] { ':', ',' });
         return new { cause = l[0], effect = l[1].Trim() };
       });
 
-      return new ProcessedOracleText(oracle_text_collection, causeEffect.Select(c => c.cause).ToList(), causeEffect.Select(c => c.effect).ToList());
+      return new ProcessedOracleText(oracle_text_collection, causeEffect.Where(c => c.cause.Length > 10).Select(c => c.cause).ToList(), causeEffect.Where(c => c.effect.Length > 10).Select(c => c.effect).ToList());
     }
 
     public class ProcessedOracleText
