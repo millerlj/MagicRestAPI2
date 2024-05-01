@@ -87,10 +87,16 @@ namespace MagicRestAPI.Controllers
             return Ok();
         }
 
-        [HttpPost("all_card_names")]
+        [HttpGet("all_card_names")]
         public IEnumerable<string> GetAllCardNames()
         {
             return _parser.GetAllCardNames();
+        }
+
+        [HttpGet("all_type_lines")]
+        public IEnumerable<string> GetAllTypeLines()
+        {
+            return _parser.GetAllCardTypeLines();
         }
 
         [HttpPost("all_unique_major_card_types")]
@@ -123,6 +129,7 @@ namespace MagicRestAPI.Controllers
         [HttpGet("all_oracle_text/{separate_clause}/{separate_cause_effect}")]
         public IActionResult GetAllOracleText(bool separate_clause, bool separate_cause_effect)
         {
+            Console.WriteLine("GetAllOracleText Called");
             if (!separate_cause_effect && !separate_clause)
             {
                 return Ok(_parser.GetAllOracleText(false, false));
